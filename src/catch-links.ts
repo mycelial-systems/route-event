@@ -9,26 +9,25 @@ export function CatchLinks (
     cb:(href:string) => void,
     opts:{
         handleAnchor?:boolean|((href:string)=>boolean),
-        handleLink?:(href:string)=>boolean,
+        handleLink?:(href:string, anchor:HTMLAnchorElement)=>boolean,
     } = {},
 ):()=>void {
     root.addEventListener('click', onClick)
 
     function onClick (ev:MouseEvent) {
         // if command click, do nothing
-        if (ev.altKey || ev.ctrlKey || ev.metaKey || ev.shiftKey ||
-            ev.defaultPrevented) {
+        if (ev.altKey || ev.ctrlKey || ev.metaKey || ev.shiftKey || ev.defaultPrevented) {
             return true
         }
 
-        let anchor:null|HTMLElement = null
+        let anchor:null|HTMLAnchorElement = null
         for (
             let n = (ev.target as HTMLElement|null);
             n && n.parentNode;
             n = n.parentElement
         ) {
             if (n!.nodeName === 'A') {
-                anchor = n
+                anchor = n as HTMLAnchorElement
                 break
             }
         }
@@ -44,7 +43,7 @@ export function CatchLinks (
 
         // if we were given a function to check, call it
         if (opts.handleLink) {
-            if (!opts.handleLink(urlPath)) return
+            if (!opts.handleLink(urlPath, anchor)) return
         }
 
         const handleAnchor = opts.handleAnchor === undefined ? true : opts.handleAnchor
