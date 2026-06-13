@@ -39,7 +39,7 @@ export function Route (opts:{
         listeners.forEach(function (cb) {
             cb(href, eventData)
         })
-    }, { init })
+    }, { init, handleAnchor: opts.handleAnchor })
 
     CatchLinks(el, setRoute, {
         handleAnchor: opts.handleAnchor,

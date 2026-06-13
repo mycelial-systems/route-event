@@ -46,7 +46,9 @@ export function CatchLinks (
             if (!opts.handleLink(urlPath, anchor)) return
         }
 
-        const handleAnchor = opts.handleAnchor === undefined ? true : opts.handleAnchor
+        const handleAnchor = (opts.handleAnchor === undefined ?
+            true :
+            opts.handleAnchor)
 
         // else, handle the click
         if (url.href.includes('#')) {

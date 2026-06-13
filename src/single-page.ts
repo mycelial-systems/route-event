@@ -23,7 +23,7 @@ class Page {
             (window.history && window.history.pushState)
         )
 
-        if (typeof opts.handleAnchor === 'function') {
+        if (opts.handleAnchor !== undefined) {
             this.handleAnchor = opts.handleAnchor
         }
 
@@ -39,11 +39,24 @@ class Page {
         const scroll = this.scroll[href]
         this.pushHref(href)
 
-        this.cb && this.cb(href, {
+        // when not handling the anchor, route to the base path and let the
+        // browser handle the hash natively
+        const routePath = (this.shouldHandleAnchor(href) ?
+            href :
+            stripHash(href))
+
+        this.cb && this.cb(routePath, {
             popstate: opts.popstate,
             scrollX: (scroll && scroll[0]) || 0,
             scrollY: (scroll && scroll[1]) || 0
         })
+    }
+
+    shouldHandleAnchor (href:string):boolean {
+        if (!href.includes('#')) return true
+        return (typeof this.handleAnchor === 'function' ?
+            this.handleAnchor(href) :
+            this.handleAnchor)
     }
 
     saveScroll () {
@@ -55,15 +68,8 @@ class Page {
     pushHref (href:string) {
         this.current = href
         const mismatched = getPath() !== href
-        let handleThis = true
 
-        if (href.includes('#')) {
-            handleThis = (typeof this.handleAnchor === 'function' ?
-                this.handleAnchor(href) :
-                this.handleAnchor)
-        }
-
-        if (mismatched && handleThis) {
+        if (mismatched && this.shouldHandleAnchor(href)) {
             window.history.pushState(null, '', href)
         }
     }
@@ -79,6 +85,12 @@ function getPath () {
     return window.location.pathname
         + (window.location.search || '')
         + (window.location.hash || '')
+}
+
+function stripHash (href:string):string {
+    const i = href.indexOf('#')
+    const base = i === -1 ? href : href.slice(0, i)
+    return base || '/'
 }
 
 export default singlePage
