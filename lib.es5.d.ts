@@ -17,3 +17,5 @@ interface Array<T> {
   filter<S extends T>(predicate: BooleanConstructor, thisArg?: any)
     : Exclude<S, Falsy>[];
 }
+
+declare module '*.css'
