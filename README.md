@@ -87,13 +87,16 @@ the browser's back/forward button, then `{ popstate }` will be true.
 import Route from 'route-event'
 const onRoute = Route()  // by default listen on document.body
 
-// listen for click events on docuement.body. If the href is local to the
-// server, call `onRoute`
+// listen for click events on docuement.body.
+// If the href is local to the server, then call `onRoute`
 var stopListening = onRoute(function onRoute (path, data) {
   console.log(path)
-  // => '/example/path'
+  // => '/example/path?abc=123'
   console.log(data)
   // => { scrollX: 0, scrollY: 0, popstate: false }
+
+  const withoutQueryString = path.split(/[?#]/).shift()
+  // '/example/path'
 
   // set focus
   // see https://gomakethings.com/shifting-focus-on-route-change-with-react-router/
@@ -118,6 +121,7 @@ routeEvent.setRoute.push('/abc')
 
 // ...sometime in the future...
 // unsubscribe from route events
+
 stopListening()
 ```
 
@@ -134,8 +138,6 @@ const onRoute = Route({ init: false })
 
 Any subsequent clicks will trigger an event, but nothing will happen
 on first page load.
-
-
 
 ## Pass in an element to listen to, and handle events with a router
 
@@ -155,6 +157,16 @@ router.addRoute('/', function () {
 routeEvent(function onChange (path, ev) {
   var m = router.match(path)
   m.action()
+
+  // handle hash links
+  if (path.includes('#')) {
+      // assuming link is like '#link'
+      const pathParts = path.split('#')  // hash
+      state.route.value = pathParts.shift()!.split('?').shift()!  // query string
+      return setTimeout(() => {  // wait for veiw to render
+          document.getElementById(pathParts.pop()!)?.scrollIntoView()
+      }, 1)
+  }
 
   // handle scroll state like a web browser
   if (ev.popstate) {
