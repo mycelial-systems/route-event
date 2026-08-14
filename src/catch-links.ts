@@ -35,7 +35,13 @@ export function CatchLinks (
         // if not a link click, do nothing
         if (!anchor) return true
 
-        const url = new URL(anchor.getAttribute('href')!, location.origin)
+        const href = anchor.getAttribute('href')
+
+        // an anchor without an href is not a link
+        if (href === null) return true
+
+        // resolve against the document href
+        const url = new URL(href, location.href)
         const urlPath = url.pathname + url.search
 
         // if not local, do nothing
@@ -46,32 +52,30 @@ export function CatchLinks (
             if (!opts.handleLink(urlPath, anchor)) return
         }
 
+        const newPath = urlPath + (url.hash || '')
+
         const handleAnchor = (opts.handleAnchor === undefined ?
             true :
             opts.handleAnchor)
 
         // else, handle the click
+        // note `url.hash` is '' for an `href="#"` link, but the '#' is
+        // still in `url.href`, so it counts as an anchor link
         if (url.href.includes('#')) {
-            if (typeof handleAnchor === 'function') {
-                // do we want to handle this?
-                const handle = handleAnchor(url.href)
-                if (handle) {
-                    ev.preventDefault()
-                    cb(resolve(location.pathname, urlPath || '') +
-                        (url.hash || ''))
-                    return false
-                }
-            } else {
-                if (handleAnchor) {
-                    ev.preventDefault()
-                    cb(resolve(location.pathname, urlPath || '') +
-                        (url.hash || ''))
-                    return false
-                }
+            // `handleAnchor` gets the same path shape that `singlePage`
+            // passes it, so one callback works for both
+            const handle = (typeof handleAnchor === 'function' ?
+                handleAnchor(newPath) :
+                handleAnchor)
+
+            if (handle) {
+                ev.preventDefault()
+                cb(newPath)
+                return false
             }
         } else {
             ev.preventDefault()
-            cb(resolve(location.pathname, urlPath || '') + (url.hash || ''))
+            cb(newPath)
             return false
         }
     }

@@ -30,6 +30,7 @@ to handle back/forward button clicks.
 - [Don't emit a route event when the page first loads](#dont-emit-a-route-event-when-the-page-first-loads)
 - [Pass in an element to listen to, and handle events with a router](#pass-in-an-element-to-listen-to-and-handle-events-with-a-router)
 - [Use a function to check clicks](#use-a-function-to-check-clicks)
+- [Anchor links](#anchor-links)
 - [focus](#focus)
   * [See also](#see-also)
 - [scroll position](#scroll-position)
@@ -196,6 +197,38 @@ onRoute(newPath => {
 document.querySelector('#def')?.click()
 ```
 
+## Anchor links
+
+By default, links with a hash are routed client-side, and the full path
+including the hash is passed to your listeners. Pass `handleAnchor: false` to
+let the browser scroll natively instead; the listener is then called with the
+path only, minus the hash.
+
+```js
+import Route from 'route-event'
+
+const onRoute = Route({ handleAnchor: false })
+
+onRoute(newPath => {
+    console.log(newPath)  // '/about', not '/about#section'
+})
+```
+
+`handleAnchor` also takes a function, so you can decide per link. It is called
+with the resolved path -- `'/about#section'` -- not the raw `href` attribute
+and not an absolute URL. Relative hrefs are resolved against the current
+document URL, the same way the browser resolves them, so a bare `#section`
+link on `/about` arrives as `/about#section`.
+
+```js
+const onRoute = Route({
+    // handle links within the current page natively, route everything else
+    handleAnchor: (href) => {
+        return new URL(href, location.href).pathname !== location.pathname
+    }
+})
+```
+
 ## focus
 
 See [a post about focus in SPAs](https://gomakethings.com/shifting-focus-on-route-change-with-react-router/).
@@ -289,7 +322,12 @@ import Route from 'route-event'
 ```
 
 ```ts
-function Route (opts:{ el?:HTMLElement } = {}):{
+function Route (opts:{
+    el?:HTMLElement;
+    handleAnchor?:boolean|((href:string)=>boolean);
+    handleLink?:(href:string)=>boolean;
+    init?:boolean;
+} = {}):{
     (cb:Listener):void;
     setRoute:ReturnType<typeof singlePage>
 }

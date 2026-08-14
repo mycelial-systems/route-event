@@ -3,7 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <title>tests</title>
-    <script src="/reporter.js"></script>
 </head>
 <body>
     <a id="local-link" href="/local">local link</a>
@@ -13,6 +12,12 @@
     <a id="abc" href="/abc">abc</a>
     <a id="def" href="/def">def</a>
 
-    <script src="/test-bundle.js"></script>
+    <div id="link-root">
+        <a id="hash-only" href="#the-more-marker">hash only</a>
+        <a id="hash-absolute" href="/about#the-more-marker">hash absolute</a>
+        <a id="search-only" href="?q=1">search only</a>
+        <a id="relative-segment" href="contact">relative segment</a>
+        <a id="no-href">no href</a>
+    </div>
 </body>
 </html>
