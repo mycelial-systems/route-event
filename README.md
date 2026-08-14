@@ -156,16 +156,17 @@ router.addRoute('/', function () {
 })
 
 routeEvent(function onChange (path, ev) {
-  var m = router.match(path)
+  // the given path includes the query string and hash,
+  // so take the pathname only before matching a route
+  const [pathname, hash] = splitPath(path)
+
+  const m = router.match(pathname)
   m.action()
 
-  // handle hash links
-  if (path.includes('#')) {
-      // assuming link is like '#link'
-      const pathParts = path.split('#')  // hash
-      state.route.value = pathParts.shift()!.split('?').shift()!  // query string
-      return setTimeout(() => {  // wait for veiw to render
-          document.getElementById(pathParts.pop()!)?.scrollIntoView()
+  // handle hash links -- assuming the link is like '#link'
+  if (hash) {
+      return setTimeout(() => {  // wait for the view to render
+          document.getElementById(hash)?.scrollIntoView()
       }, 1)
   }
 
@@ -175,6 +176,12 @@ routeEvent(function onChange (path, ev) {
   }
   window.scrollTo(0, 0)
 })
+
+// '/abc?a=1#link' => ['/abc', 'link']
+function splitPath (path) {
+  const [beforeHash, hash] = path.split('#')
+  return [beforeHash.split('?')[0], hash]
+}
 ```
 
 ## Use a function to check clicks
